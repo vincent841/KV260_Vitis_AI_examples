@@ -61,8 +61,12 @@ def train(model, device, train_loader, optimizer, epoch):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         x = model(data)
-        output = F.log_softmax(input=x,dim=0)
-        loss = F.nll_loss(output, target)
+        
+        # [vai2.5]
+        # output = F.log_softmax(input=x,dim=0)
+        # loss = F.nll_loss(output, target)
+        loss = F.cross_entropy(x, target)
+        
         loss.backward()
         optimizer.step()
         counter += 1

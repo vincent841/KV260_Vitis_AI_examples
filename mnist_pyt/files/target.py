@@ -53,7 +53,11 @@ def generate_images(dset_dir, num_images, dest_dir):
   # iterate thru' the dataset and create images
   dataiter = iter(test_loader)
   for i in tqdm(range(num_images)):
-    image, label = dataiter.next()
+
+    # [vai2.5]
+    # image, label = dataiter.next()
+    image, label = next(dataiter)
+    
     img = image.numpy().squeeze()
     img = (img * 255.).astype(np.uint8)
     idx = label.numpy()

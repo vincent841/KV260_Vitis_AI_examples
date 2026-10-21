@@ -21,6 +21,7 @@ Author: Mark Harvey, Xilinx inc
 '''
 
 import os
+from pyexpat import model
 import sys
 import argparse
 import random
@@ -57,8 +58,18 @@ def quantize(build_dir,quant_mode,batchsize):
     device = torch.device('cpu')
 
   # load trained model
+  
+  # [vai2.5]
+  # model = CNN().to(device)
+  # model.load_state_dict(torch.load(os.path.join(float_model,'f_model.pth')))
   model = CNN().to(device)
-  model.load_state_dict(torch.load(os.path.join(float_model,'f_model.pth')))
+  model.load_state_dict(
+    torch.load(
+        os.path.join(float_model, 'f_model.pth'),
+        map_location=device
+    )
+  )
+  model.eval()
 
   # force to merge BN with CONV for better quantization accuracy
   optimize = 1
@@ -66,9 +77,22 @@ def quantize(build_dir,quant_mode,batchsize):
   # override batchsize if in test mode
   if (quant_mode=='test'):
     batchsize = 1
+
+  # [vai2.5]  
+  # rand_in = torch.randn([batchsize, 1, 28, 28])
+  # quantizer = torch_quantizer(quant_mode, model, (rand_in), output_dir=quant_model) 
+  rand_in = torch.randn(
+    [batchsize, 1, 28, 28],
+    device=device
+  )
+  quantizer = torch_quantizer(
+    quant_mode,
+    model,
+    rand_in,
+    output_dir=quant_model,
+    device=device
+  )
   
-  rand_in = torch.randn([batchsize, 1, 28, 28])
-  quantizer = torch_quantizer(quant_mode, model, (rand_in), output_dir=quant_model) 
   quantized_model = quantizer.quant_model
 
 
